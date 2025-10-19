@@ -2,6 +2,10 @@
 
 MusicaControl é um **player de música em JavaFX** que permite abrir, tocar, pausar e controlar músicas localmente, exibindo informações de tags (nome, artista, duração) e progresso de reprodução em tempo real. É um projeto educativo e funcional que combina **JavaFX** e a biblioteca **StreamPlayer**.
 
+<img width="400" height="682" alt="Captura de Tela 2025-10-19 às 01 18 12" src="https://github.com/user-attachments/assets/9b3b0b22-570c-4477-a0e8-989f6fa403f9" />
+
+
+
 ---
 
 ## Funcionalidades
