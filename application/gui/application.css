@@ -1,0 +1,125 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+.titulo-musica{
+	-fx-font-size:24px;
+	-fx-text-fill: #F4F4F8;
+	
+}
+
+.outras-infos-musica{
+	-fx-font-size: 16px;
+	-fx-padding: 3px 0 0 0; 
+	-fx-text-fill: #F4F4F8;
+}
+
+.grid-tags-musica{
+	-fx-padding: 20px  15px  20px  15px;
+	-fx-background-color: #302F38;
+	-fx-background-insets: 10px 10px 10px 10px;
+	-fx-background-radius: 7px;
+}
+
+.barra-progresso{
+	-fx-pref-width: 10000em;
+	-fx-padding: 0 10px 0 10px;
+	-fx-fill-width: true;
+}
+
+.tempo{
+	-fx-padding: 0 5px 0 5px;
+	-fx-min-width: 45px;
+	-fx-text-fill: #F4F4F8;
+}
+
+.volume-controles{
+	-fx-min-width: 240px;
+	-fx-pref-width: 10000em;
+	-fx-padding: 5px 0px 0 25px;
+	-fx-background-color: #302F38;
+	-fx-background-radius: 7px;
+	-fx-background-insets: 0 5px 0 5px;
+}
+
+.volume-controles-texto{
+	-fx-text-fill: #F4F4F8;
+	-fx-font-size: 16px;
+	-fx-min-width: 65px;
+}
+
+.volume-pause{
+	-fx-padding: 0 5px 10px 5px;
+}
+
+.volume-slider{
+	-fx-min-width: 10px;
+	-fx-pref-width: 10000em;
+	-fx-padding: 0 20px 0 0;
+}
+
+.pause-btn{
+	-fx-min-width: 285px;
+	-fx-pref-width: 10000em;
+	-fx-min-height: 30px;
+	-fx-padding: 0 15px 0 15px;
+	-fx-background-color: #276FBF;
+	-fx-text-fill: #F4F4F8;
+	-fx-background-radius: 7px;
+	-fx-background-insets: 0 0 0 5px;
+}
+
+.tempo-musica-grid{
+	-fx-fit-to-width: true;
+	-fx-fill-width: true;
+	-fx-padding: 10px 10px 0 10px;
+}
+
+.capa-grid{
+	-fx-alignment: center;
+	-fx-padding: 10px 0 0 0;
+	
+}
+
+.capa{
+	-fx-background-radius: 7px;
+	-fx-border-radius: 7px;
+	-fx-effect: dropshadow(three-pass-box, rgba(50,50,50,0.8), 10, 0, 0, 0);
+}
+
+.botao-arquivo{
+	-fx-padding: 30px 0 30px 0;
+	-fx-background-insets: 0 10px 0 10px;
+	-fx-background-color: #302F38;
+	-fx-background-radius: 7px;
+	-fx-text-fill: #F4F4F8;
+	-fx-pref-width: 300em;
+	-fx-border-style: dashed inside ;
+	-fx-border-color: #F4F4F833;
+	-fx-border-width: 3px;
+	-fx-border-insets: 0 10px 0 10px;
+	-fx-border-radius: 7px;
+}
+
+.botoes-extras{
+	-fx-min-width: 75px;
+	-fx-pref-width: 10000em;
+	-fx-min-height: 30px;
+	-fx-padding: 0 15px 0 15px;
+	-fx-background-color: #302F38;
+	-fx-text-fill: #F4F4F8;
+	-fx-background-radius: 7px;
+	-fx-background-insets: 0 0 0 5px;
+}
+
+.player-controls-grd{
+	-fx-padding: 0 10px 10px 5px;
+}
+
+.btn-ant-prox{
+	-fx-min-width: 50px;
+	-fx-pref-width: 10000em;
+	-fx-min-height: 30px;
+	-fx-padding: 0 15px 0 15px;
+	-fx-background-color: #276FBF;
+	-fx-text-fill: #F4F4F8;
+	-fx-background-insets: 0 0 0 5px;
+	-fx-background-radius: 7px;
+}
