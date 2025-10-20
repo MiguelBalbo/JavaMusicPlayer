@@ -47,7 +47,6 @@ application/
 └─ img/ # Imagens utilizadas no projeto (opcional)
 
 ## Observações
-- Algumas músicas podem ter duração calculada de forma aproximada dependendo do tipo de arquivo (VBR ou bitrate variável).
 - O player ainda não suporta streaming online; apenas arquivos locais.
 - Recomendado usar arquivos com tags corretamente preenchidas para exibição completa das informações.
 
@@ -55,4 +54,16 @@ application/
 - Suporte a playlists.
 - Reproduzir múltiplos formatos de áudio com melhor compatibilidade.
 - Barra de progresso clicável para pular para diferentes partes da música.
+- Capa com bordas arredondadas
+- Importação de playlists
+- Botão de adicionar à playlist atual ou abrir uma para colocar
+- Letras da música em nova janela
+- Menus superiores no mac
+- Integração com notificações de música do Sistema Operacional nativo
+- Exportação para plataformas
+- Design de ícone para identidade visual
+- Abrir links estáticos
+- Abrir transmissões
+- Abrir arquivos, links e transmissões AAC
+- Discord Rich Presence
 
