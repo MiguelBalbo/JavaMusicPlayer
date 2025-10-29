@@ -1,22 +1,17 @@
 package application.control;
 
-import java.io.File;
 import com.goxr3plus.streamplayer.stream.StreamPlayer;
 
-import application.gui.ButtonIconsRender;
+import application.gui.IconsRender;
 import application.model.Musica;
+import application.model.UIButtons;
+import application.model.UIElements;
+import application.model.UIFiles;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Slider;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.FileChooser;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.stage.Stage;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
 
 public class MusicaControl {
@@ -24,42 +19,38 @@ public class MusicaControl {
 	private StreamPlayer mp;
 	private TagInfoControl tic = new TagInfoControl();
 	private final Timeline[] tl = new Timeline[1];
-	private final Timeline[] tl1 = new Timeline[1];
 	//private KeyFrameControl kfc = new KeyFrameControl();
-	private ButtonIconsRender bir = new ButtonIconsRender();
+	private IconsRender ir = new IconsRender();
 	private final double[] progressoTempo = new double[1];
 	
-	public File selecionaArquivo(Stage primaryStage) {
-		FileChooser fc = new FileChooser();
-		ExtensionFilter exMsc = new ExtensionFilter("Music Files","*.mp3","*.flac","*.wav");
-		ExtensionFilter exAll = new ExtensionFilter("All Files","*.*");
-		fc.getExtensionFilters().addAll(exMsc, exAll);
-		fc.setTitle("Escolha musica");
-		File f = fc.showOpenDialog(primaryStage);
-		return f;
-	}
 	
-
-	
-	public void openMusic(Stage primaryStage, File f) throws Exception{
+	public void openMusic(UIFiles uf, Runnable onFinish) throws Exception{
+		
 		mp = new StreamPlayer();
-		mp.open(f);
+		mp.open(uf.getMusicF());
 		mp.play();
 		
-		primaryStage.setOnCloseRequest(e -> {
-			mp.stop();
-			System.exit(0);
-		});
+	}
+	
+	public void openMusic(Stage primaryStage, UIFiles uf) throws Exception{
+		
+		mp = new StreamPlayer();
+		mp.open(uf.getMusicF());
+		mp.play();
+		
+		
 	}
 	
 	
-	public void mscPlayerControles(BorderPane root, File f, Button b1, Label tempoAtualLbl, ProgressBar pgTempo, Slider volumeSldr) throws Exception {
-		Musica m1 = tic.musicTagInfo(f);
+	
+	public void mscPlayerControles(UIElements ue, UIButtons ub, Musica m1) throws Exception {
+		
 		final double duracaoTotal = m1.getDuracaoSegundos();
 		final double[] progress = new double[1];
 		progress[0] = 1;
+
 		
-		volumeSldr.valueProperty().addListener((obs, old, newVal) -> {
+		ub.setListenerVolumeSldr((obs, old, newVal) -> {
 			mp.setGain(newVal.doubleValue());
 		});
 		
@@ -71,44 +62,26 @@ public class MusicaControl {
 		        return;
 		    }
 			
-			if(progress[0] == 1) {
-				closePlayer(root);
-			}
+			//if(progress[0] == 1) {
+				//closePlayer(root);
+			//}
 			
 			
 			if (mp.isPaused()) {
-				ImageView iv = bir.ivPlayIcn();
-				b1.setText("Play");
-				b1.setGraphic(iv);
-				b1.setContentDisplay(ContentDisplay.LEFT);
-				b1.setOnAction(e1 -> mp.resume());
+				ub.setPausedPlay(true, ir);
+				EventHandler<ActionEvent> event = e1 -> mp.resume();
+				ub.setActionPauseBtn(event);
 			} else {
-				ImageView iv = bir.ivPauseIcn();
-				b1.setText("Pause");
-				b1.setGraphic(iv);
-				b1.setContentDisplay(ContentDisplay.LEFT);
-				b1.setOnAction(e1 -> mp.pause());
-
-			}
-		});
-		
-		KeyFrame k1 = new KeyFrame (Duration.millis(1000), e3 -> {
-			if(mp == null) {
-				tl1[0].stop();
-				return;
-			}
-			
-			
-			if (!mp.isPaused()) {
+				ub.setPausedPlay(false, ir);
+				EventHandler<ActionEvent> event = e1 -> mp.pause();
+				ub.setActionPauseBtn(event);
+				
+				
 				progress[0] = (double)(progressoTempo[0]/ duracaoTotal);
-				double progressoSegundos = progressoTempo[0];
-				StringBuffer sb = new StringBuffer();
-				sb.append(String.format("%02d",(int)progressoSegundos/60));
-				sb.append(":");
-				sb.append(String.format("%02d",(int)progressoSegundos%60));
-				tempoAtualLbl.setText(sb.toString());
-				pgTempo.setProgress(progress[0]);
-				progressoTempo[0]++;
+				ue.setPgBar(progress[0]);
+				ue.setTempoAtualLbl(progressoTempo[0]);
+				progressoTempo[0] += 0.1;
+
 			}
 		});
 		
@@ -117,15 +90,11 @@ public class MusicaControl {
 		tl[0].setCycleCount(Timeline.INDEFINITE);
 		tl[0].play();
 		
-		tl1[0] = new Timeline(k1);
-		tl1[0].setCycleCount(Timeline.INDEFINITE);
-		tl1[0].play();
 	}
 	
 
-	public void closePlayer(BorderPane root) {
+	public void closePlayer() {
 		if (mp != null) {
-			tl1[0].stop();
 			tl[0].stop();
 	        progressoTempo[0] = 0;
 			
@@ -134,7 +103,7 @@ public class MusicaControl {
 			mp = null;
 			tl[0].stop();
 		}
-	}
+	}	
 	
 	
 

@@ -1,9 +1,25 @@
 package application.gui;
 	
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import application.control.FileControl;
 import application.control.MusicaControl;
+import application.control.PlaylistControl;
 import application.control.TagInfoControl;
+import application.model.Musica;
+import application.model.UIButtons;
+import application.model.UIElements;
+import application.model.UIFiles;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,10 +36,21 @@ import javafx.scene.layout.GridPane;
 
 public class Main extends Application {
 	
+	//QUERO QUE ESSES ABAIXO SEJAM INTERFACES -- CORRIGIR ISSO
 	private	MusicaControl mc = new MusicaControl();
-	private TagInfoControl tic = new TagInfoControl();
 	private GridRender gr = new GridRender();
-	private ButtonIconsRender bir = new ButtonIconsRender();
+	private IconsRender ir = new IconsRender();
+	private TagInfoControl tic = new TagInfoControl();
+	private PlaylistControl pc = new PlaylistControl();
+	private FileControl fc = new FileControl();
+	private UIElements ue = new UIElements();
+	private UIButtons ub = new UIButtons();
+	private UIFiles uf = new UIFiles();
+	
+	private Lyrics ls = new Lyrics();
+	
+	private Timeline t;
+	
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -31,45 +58,45 @@ public class Main extends Application {
 			primaryStage.setMinWidth(400);
 			primaryStage.setMinHeight(680);
 			primaryStage.setTitle("Player de Musica");
+			primaryStage.setOnCloseRequest(e -> {
+				mc.closePlayer();
+				if (t != null) {
+					t.stop();
+				}
+				System.exit(0);
+			});
+			
+			
 			BorderPane root = new BorderPane();
 			Scene scene = new Scene(root,400,650);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			root.setStyle("-fx-background-color:#202022;");
 			
-			ImageView ivFolderIcn = bir.ivFolderIcn();
+			ImageView ivFolderIcn = ir.ivFolderIcn();
 			Button btnEscolheArquivo = new Button("Escolher arquivo");
 			btnEscolheArquivo.setGraphic(ivFolderIcn);
 			btnEscolheArquivo.setContentDisplay(ContentDisplay.LEFT);
 			btnEscolheArquivo.getStyleClass().add("botao-arquivo");
 			
 			//renderiza capa
-			ImageView capa = tic.mscCapa();
-			GridPane capaAlbumGrd = gr.capaAlbumGrd(capa);
-			root.setTop(capaAlbumGrd);
+			ue.setCssCapaAlbumGrd("capa-grid");
+			ue.setImageCapaAlbumGrd(ir.mscCapa());
+			root.setTop(ue.getCapaAlbumGrd());
 			
 			//renderiza tags da música
-			Label musicaTagLbl = new Label("");
-			Label albumTagLbl = new Label("");
-			Label artistaTagLbl = new Label("");
-			GridPane tagMusicaGrd = gr.tagMusicaGrd(musicaTagLbl, albumTagLbl, artistaTagLbl);
+			GridPane tagMusicaGrd = gr.tagMusicaGrd(ue);
 			
 			//renderiza tempo
-			Label tempoAtualLbl = new Label("00:00");
-			Label tempoFinalLbl = new Label("00:00");
-			ProgressBar pgBar = new ProgressBar();
-			GridPane tempoMusicaGrd = gr.tempoMusicaGrd(tempoAtualLbl, tempoFinalLbl, pgBar);
-			
-			
+			ue.setTempoAtualLbl(0);
+			ue.setTempoFinalLbl(0);
+			GridPane tempoMusicaGrd = gr.tempoMusicaGrd(ue.getTempoAtualLbl(), ue.getTempoFinalLbl(), ue.getPgBar());
 			
 			//renderiza volume e botões extras
-			Slider volumeSldr = new Slider(0,1,1);
-			GridPane volumePauseGrd = gr.volumePauseGrd(volumeSldr);
-			
+			GridPane volumePauseGrd = gr.volumePauseGrd(ub.getVolumeSldr(), ub.getAddPlaylistBtn(),ub.getLyricsBtn());
 			
 			
 			//renderiza botões do player
-			Button pauseBtn = new Button("Sem música tocando");
-			GridPane playerCtrlGrd = gr.playerCtrlGrd(pauseBtn);
+			GridPane playerCtrlGrd = gr.playerCtrlGrd(ub.getPauseBtn(), ub.getBackBtn(), ub.getProxBtn());
 			
 			
 			
@@ -84,26 +111,111 @@ public class Main extends Application {
 			
 			root.setCenter(agrupaTagsGrd);
 			
+			
+			
+			
+			ub.setActionLyricsBtn(e -> {
+				uf.setLyricsF(fc.selecionaArquivo(2).showOpenDialog(primaryStage));
+				if (uf.getLyricsF() != null) {
+					Stage lyricsStage;
+					try {
+						lyricsStage = ls.showLyrics(uf);
+						t = new Timeline(ls.atualizaLrc(ue));
+						t.setCycleCount(Timeline.INDEFINITE);
+						t.play();
+						
+						primaryStage.setOnCloseRequest(e1 -> {
+							lyricsStage.close();
+						});
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+
+			
+			
+			
+			
+			ub.setActionAddPlaylistBtn(e -> {
+				if (uf.getPlaylistF() == null) {
+					uf.setPlaylistF(fc.selecionaArquivo(1).showOpenDialog(primaryStage));
+				}
+				if (uf.getMusicF() != null) {
+					try {
+						pc.saveToPlaylist(uf);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			
+			
+			
 			btnEscolheArquivo.setOnAction(
 				e -> {
 					try {
 						//para musica atual (se houver)
-						mc.closePlayer(root);
+						mc.closePlayer();
 						
 						//abre seletor de arquivo
-						File f = mc.selecionaArquivo(primaryStage);
+						uf.setMusicF(fc.selecionaArquivo(0).showOpenDialog(primaryStage));
 						
-						//corrige player
-						if (f != null) {
-							gr.refreshPlayer(root, tic, mc, capa, f, capaAlbumGrd, musicaTagLbl, albumTagLbl, artistaTagLbl, tempoFinalLbl, primaryStage, pauseBtn, tempoAtualLbl, pgBar, volumeSldr);
+						if (uf.getMusicF() != null) {
+							String fPath = uf.getMusicF().getPath();
+							String[] strFatia = fPath.split("\\.");
+							
+							if (strFatia[strFatia.length-1].toLowerCase().equals("m3u8") || strFatia[strFatia.length-1].toLowerCase().equals("m3u") ){
+								
+								uf.mscAsPlaylist();
+								ub.setNextBackEnabled();
+								uf.setPlaylistL(pc.openPlaylist(uf));
+								
+								//CORRIGIR ISSO, COLOCAR SEPARADO
+								Thread t = abrePlaylist();
+								
+								t.start();
+								
+								EventHandler<ActionEvent> proxMsc = e1 -> {
+									mc.closePlayer();
+									t.interrupt();
+								};
+								ub.setActionProxBtn(proxMsc);
+								
+								
+								
+								EventHandler<ActionEvent> anterMsc = (e1 -> {
+									mc.closePlayer();
+									t.interrupt();
+									uf.setPlaylistPos(uf.getPlaylistPos() - 2);
+								});
+								ub.setActionBackBtn(anterMsc);
+								
+								
+							} else {
+								//abre player
+								if (uf.getMusicF() != null) {
+									mc.openMusic(primaryStage, uf);
+									//corrige player
+									AtualizaPlayer();
+								}
+								ub.setNextBackDisabled();
+							}
+							
+						
+						}} catch (Exception e1) {
+							// Auto-generated catch block
+							e1.printStackTrace();
 						}
-					
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}	
-				});
+					}
+				);
 				
+			
+			
+			
+			
+			
+			
 				btnEscolheArquivo.setOnDragOver(e -> {
 					if (e.getGestureSource() != btnEscolheArquivo && e.getDragboard().hasFiles()) {
 		                e.acceptTransferModes(TransferMode.COPY);
@@ -111,20 +223,62 @@ public class Main extends Application {
 		            e.consume();
 				});
 				
+				
+				
 				btnEscolheArquivo.setOnDragDropped(e -> {
 					Dragboard db = e.getDragboard();
-					mc.closePlayer(root);
+					mc.closePlayer();
 					
 					
 		            if (db.hasFiles()) {
-		                File file = db.getFiles().get(0); 
+		            	uf.setMusicF(db.getFiles().get(0)); 
 		                try {
-							gr.refreshPlayer(root, tic, mc, capa, file, capaAlbumGrd, musicaTagLbl, albumTagLbl, artistaTagLbl, tempoFinalLbl, primaryStage, pauseBtn, tempoAtualLbl, pgBar, volumeSldr);
-						} catch (Exception e1) {
+		                if (uf.getMusicF() != null) {
+		                	String fPath = uf.getMusicF().getPath();
+							String[] strFatia = fPath.split("\\.");
+							
+							if (strFatia[strFatia.length-1].toLowerCase().equals("m3u8") || strFatia[strFatia.length-1].toLowerCase().equals("m3u") ){
+								
+								uf.mscAsPlaylist();
+								uf.setPlaylistL(pc.openPlaylist(uf));
+								ub.setNextBackEnabled();
+								
+								//CORRIGIR ISSO, COLOCAR SEPARADO
+								Thread t = abrePlaylist();
+								
+								t.start();
+								
+								EventHandler<ActionEvent> proxMsc = e1 -> {
+									mc.closePlayer();
+									t.interrupt();
+								};
+								ub.setActionProxBtn(proxMsc);
+								
+								
+								
+								EventHandler<ActionEvent> anterMsc = (e1 -> {
+									mc.closePlayer();
+									t.interrupt();
+									uf.setPlaylistPos(uf.getPlaylistPos() - 2);
+								});
+								ub.setActionBackBtn(anterMsc);
+								
+							} else {
+								//abre player
+								mc.openMusic(primaryStage, uf);
+								//corrige player -----> MELHORAR ISSO, MUITA DEPENDÊNCIA EM UM MÉTODO!!!!
+								AtualizaPlayer();
+								ub.setNextBackDisabled();
+							}
+		                	}
+		                
+		                } catch (Exception e1) {
 		                	e1.printStackTrace();
 		                }
 		            }
 				});
+				
+
 			
 			
 			primaryStage.setScene(scene);
@@ -135,6 +289,47 @@ public class Main extends Application {
 		}
 	}
 	
+	
+	
+	
+	
+	private Thread abrePlaylist() {
+		int tamanhoPl = uf.getPlaylistL().size();
+		
+		Thread t = new Thread (() -> {
+			for (uf.setPlaylistPos(0); uf.getPlaylistPos()<=tamanhoPl; uf.setPlaylistPos(uf.getPlaylistPos() + 1)) {
+				if (Thread.currentThread().isInterrupted()) break;
+				
+				uf.setMusicF(uf.getPlaylistL().get(uf.getPlaylistPos()));
+				try {
+					
+					Platform.runLater(() -> {
+						try {
+							AtualizaPlayer();
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					});
+					
+					CountDownLatch latch = new CountDownLatch(1);
+						mc.openMusic(uf, () -> latch.countDown());
+					latch.await();
+					
+				} catch (Exception e1) {
+					// Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
+		return t;
+	}
+
+	public void AtualizaPlayer() throws Exception {
+		Musica m1 = tic.musicTagInfo(uf);
+		ue.SetUIElements(tic.musicTagInfo(uf),ir.mscCapa(m1));
+		mc.mscPlayerControles(ue, ub, m1);
+	}
 
 
 	public static void main(String[] args) {
