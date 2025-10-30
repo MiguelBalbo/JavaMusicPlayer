@@ -1,7 +1,6 @@
 package application.control;
 
  
-import com.goxr3plus.streamplayer.stream.StreamPlayer;
 import application.gui.IconsRender;
 import application.model.Musica;
 import application.model.UIButtons;
@@ -11,32 +10,45 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class MusicaControl {
 	
-	private StreamPlayer mp;
-	private TagInfoControl tic = new TagInfoControl();
+	private MediaPlayer mplay;
 	private final Timeline[] tl = new Timeline[1];
 	//private KeyFrameControl kfc = new KeyFrameControl();
 	private IconsRender ir = new IconsRender();
-	private final double[] progressoTempo = new double[1];
 	
 	
 	public void openMusic(UIFiles uf, Runnable onFinish) throws Exception{
 		
-		mp = new StreamPlayer();
-		mp.open(uf.getMusicF());
-		mp.play();
+		String[] strFatia = uf.getMusicF().getAbsolutePath().split("\\.");
+		
+		if(strFatia[strFatia.length-1].toLowerCase().equals("flac")){
+			//player de flac aqui 
+			
+		}else {
+			Media media = new Media(uf.getMusicF().toURI().toString());
+			mplay = new MediaPlayer(media);
+			mplay.play();
+		}
 		
 	}
 	
 	public void openMusic(Stage primaryStage, UIFiles uf) throws Exception{
 		
-		mp = new StreamPlayer();
-		mp.open(uf.getMusicF());
-		mp.play();
+		String[] strFatia = uf.getMusicF().getAbsolutePath().split("\\.");
+		if(strFatia[strFatia.length-1].toLowerCase().equals("flac")) {
+			//colocar player de flac aqui
+			
+		} else {
+			Media media = new Media(uf.getMusicF().toURI().toString());
+			mplay = new MediaPlayer(media);
+			mplay.play();
+		}
 		
 		
 	}
@@ -47,18 +59,18 @@ public class MusicaControl {
 		
 		final double duracaoTotal = m1.getDuracaoSegundos();
 		final double[] progress = new double[1];
+		final boolean[] aacPaused = new boolean[1];
 		progress[0] = 1;
-
+		aacPaused[0] = false;
 		
 		ub.setListenerVolumeSldr((obs, old, newVal) -> {
-			mp.setGain(newVal.doubleValue());
+			mplay.setVolume(newVal.doubleValue());
 		});
 		
 		
 		KeyFrame k = new KeyFrame (Duration.millis(100), e2 -> {
-			if (mp == null) {
+			if (mplay == null) {
 		        tl[0].stop();
-		        progressoTempo[0] = 0.0;
 		        return;
 		    }
 			
@@ -66,23 +78,28 @@ public class MusicaControl {
 				//closePlayer(root);
 			//}
 			
-			
-			if (mp.isPaused()) {
-				ub.setPausedPlay(true, ir);
-				EventHandler<ActionEvent> event = e1 -> mp.resume();
-				ub.setActionPauseBtn(event);
-			} else {
-				ub.setPausedPlay(false, ir);
-				EventHandler<ActionEvent> event = e1 -> mp.pause();
-				ub.setActionPauseBtn(event);
-				
-				
-				progress[0] = (double)(progressoTempo[0]/ duracaoTotal);
-				ue.setPgBar(progress[0]);
-				ue.setTempoAtualLbl(progressoTempo[0]);
-				progressoTempo[0] += 0.1;
+			if (mplay != null) {
+				if (mplay.getStatus() == MediaPlayer.Status.PAUSED) {
+					ub.setPausedPlay(true, ir);
+					EventHandler<ActionEvent> event = e1 -> {
+					mplay.play();
+					};
+					ub.setActionPauseBtn(event);
+				} else {
+					ub.setPausedPlay(false, ir);
+					EventHandler<ActionEvent> event = e1 -> {
+					mplay.pause();
+					};
+					ub.setActionPauseBtn(event);
+					
+					
+					progress[0] = (double)(mplay.getCurrentTime().toSeconds()/ duracaoTotal);
+					ue.setPgBar(progress[0]);
+					ue.setTempoAtualLbl(mplay.getCurrentTime().toSeconds());
 
-			}
+				}
+			} 
+			
 		});
 		
 		
@@ -94,13 +111,12 @@ public class MusicaControl {
 	
 
 	public void closePlayer() {
-		if (mp != null) {
+		if (mplay != null) {
 			tl[0].stop();
-	        progressoTempo[0] = 0;
 			
-			mp.stop();
+			mplay.stop();
             try { Thread.sleep(50); } catch (InterruptedException e) { e.printStackTrace(); }
-			mp = null;
+			mplay = null;
 			tl[0].stop();
 		}
 	}	

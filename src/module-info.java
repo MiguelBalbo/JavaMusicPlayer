@@ -3,6 +3,8 @@ module GIT_JAVAFX_PlayerMsc {
 	requires javafx.graphics;
 	requires jaudiotagger;
 	requires com.goxr3plus.streamplayer;
+	requires java.aac.player;
+	requires javafx.media;
 	
 	opens application.gui to javafx.graphics, javafx.fxml;
 }
