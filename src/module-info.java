@@ -1,4 +1,4 @@
-module TESTE_JAVAFX_PlayerMsc {
+module GIT_JAVAFX_PlayerMsc {
 	requires javafx.controls;
 	requires javafx.graphics;
 	requires jaudiotagger;

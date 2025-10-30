@@ -1,12 +1,6 @@
 package application.gui;
 	
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import application.control.FileControl;
 import application.control.MusicaControl;
 import application.control.PlaylistControl;
@@ -24,9 +18,6 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;

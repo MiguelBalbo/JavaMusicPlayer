@@ -1,7 +1,7 @@
 package application.control;
 
+ 
 import com.goxr3plus.streamplayer.stream.StreamPlayer;
-
 import application.gui.IconsRender;
 import application.model.Musica;
 import application.model.UIButtons;
