@@ -5,17 +5,33 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 
 public class UIButtons {
 	
-	Slider volumeSldr = new Slider(0,1,1);
-	Button addPlaylistBtn = new Button();
-	Button lyricsBtn = new Button();
-	Button pauseBtn = new Button("Sem música tocando");
-	Button backBtn = new Button();
-	Button proxBtn = new Button();
+	private Slider volumeSldr = new Slider(0,1,1);
+	private Button addPlaylistBtn = new Button();
+	private Button lyricsBtn = new Button();
+	private Button pauseBtn = new Button("Sem música tocando");
+	private Button backBtn = new Button();
+	private Button proxBtn = new Button();
+	private MenuItem pauseMscItem = new MenuItem("Pausar");
+	
+	public void ResetElements(){
+		pauseBtn.setText("Sem música tocando");
+		pauseBtn.setGraphic(null);
+		setNextBackDisabled();
+	}
+	
+	public MenuItem getPauseMscItem() {
+		return pauseMscItem;
+	}
+	
+	public void setActionPauseMscItem(EventHandler<ActionEvent> event) {
+		pauseMscItem.setOnAction(event);
+	}
 	
 	
 	

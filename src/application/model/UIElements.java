@@ -25,6 +25,17 @@ public class UIElements {
 		setImageCapaAlbumGrd(imagem);
 	}
 	
+	public void ResetElements(ImageView imagem){
+		musicaTagLbl.setText("");
+		albumTagLbl.setText("");
+		artistaTagLbl.setText("");
+		tempoFinalLbl.setText("00:00");
+		tempoAtualLbl.setText("00:00");
+		tempoAtualSegundos = 0;
+		tempoFinalSegundos = 0;
+		pgBar.setProgress(0);
+		setImageCapaAlbumGrd(imagem);
+	}
 	
 	
 	
@@ -38,7 +49,9 @@ public class UIElements {
 	}
 	
 	public void setImageCapaAlbumGrd(ImageView imagem) {
-		capaAlbumGrd.getChildren().removeAll();
+		if(!capaAlbumGrd.getChildren().isEmpty()) {
+			capaAlbumGrd.getChildren().removeFirst();
+		}
 		imagem.getStyleClass().add("capa");
 		capaAlbumGrd.add(imagem, 0, 0);
 		

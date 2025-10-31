@@ -1,5 +1,6 @@
 package application.gui;
 	
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import application.control.FileControl;
 import application.control.MusicaControl;
@@ -18,6 +19,10 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -63,16 +68,45 @@ public class Main extends Application {
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			root.setStyle("-fx-background-color:#202022;");
 			
-			ImageView ivFolderIcn = ir.ivFolderIcn();
 			Button btnEscolheArquivo = new Button("Escolher arquivo");
-			btnEscolheArquivo.setGraphic(ivFolderIcn);
+			btnEscolheArquivo.setGraphic(ir.ivFolderIcn());
 			btnEscolheArquivo.setContentDisplay(ContentDisplay.LEFT);
 			btnEscolheArquivo.getStyleClass().add("botao-arquivo");
+			
+			// Create a MenuBar
+	        MenuBar menuBar = new MenuBar();
+
+	        // Menu arquivo
+	        Menu fileMenu = new Menu("Arquivo");
+	        MenuItem abrirTItem = new MenuItem("Abrir link");
+	        MenuItem abrirAItem = new MenuItem("Abrir arquivo");
+	        MenuItem abrirLItem = new MenuItem("Abrir letras");
+	        MenuItem addPlayItem = new MenuItem("Adicionar à playlist");
+	        MenuItem fMusicaItem = new MenuItem("Fechar música");
+	        
+	        //menu controles
+	        Menu controleMenu = new Menu("Controles");
+	        MenuItem proxMscItem = new MenuItem("Próxima Musica");
+	        MenuItem antMscItem = new MenuItem("Música anterior");
+	        
+	        fileMenu.getItems().addAll(abrirTItem, abrirAItem, abrirLItem, addPlayItem, fMusicaItem);
+	        controleMenu.getItems().addAll(antMscItem,ub.getPauseMscItem(),proxMscItem);
+
+	        menuBar.getMenus().addAll(fileMenu,controleMenu);
+	        
+			
+	        if (System.getProperty("os.name") != null && System.getProperty("os.name").startsWith("Mac")) {
+	        	menuBar.useSystemMenuBarProperty().set(true);
+	        }
+	        
+			root.setTop(menuBar);
+			
+			
+			
 			
 			//renderiza capa
 			ue.setCssCapaAlbumGrd("capa-grid");
 			ue.setImageCapaAlbumGrd(ir.mscCapa());
-			root.setTop(ue.getCapaAlbumGrd());
 			
 			//renderiza tags da música
 			GridPane tagMusicaGrd = gr.tagMusicaGrd(ue);
@@ -93,19 +127,23 @@ public class Main extends Application {
 			
 			//agrupa tag, volume, tempo e botão de abrir arquivo
 			GridPane agrupaTagsGrd = new GridPane();
-			agrupaTagsGrd.add(tempoMusicaGrd,0,0);
-			agrupaTagsGrd.add(tagMusicaGrd,0,1);
-			agrupaTagsGrd.add(playerCtrlGrd, 0, 2);
-			agrupaTagsGrd.add(volumePauseGrd, 0, 3);
-			agrupaTagsGrd.add(btnEscolheArquivo, 0, 4);
+			agrupaTagsGrd.add(ue.getCapaAlbumGrd(), 0, 0);
+			agrupaTagsGrd.add(tempoMusicaGrd,0,1);
+			agrupaTagsGrd.add(tagMusicaGrd,0,2);
+			agrupaTagsGrd.add(playerCtrlGrd, 0, 3);
+			agrupaTagsGrd.add(volumePauseGrd, 0, 4);
+			agrupaTagsGrd.add(btnEscolheArquivo, 0, 5);
+			
 			
 			
 			root.setCenter(agrupaTagsGrd);
 			
+			ub.setNextBackDisabled();
+			proxMscItem.setDisable(true);
+			antMscItem.setDisable(true);
 			
 			
-			
-			ub.setActionLyricsBtn(e -> {
+			EventHandler<ActionEvent> abrirLetras = (e -> {
 				uf.setLyricsF(fc.selecionaArquivo(2).showOpenDialog(primaryStage));
 				if (uf.getLyricsF() != null) {
 					Stage lyricsStage;
@@ -123,12 +161,35 @@ public class Main extends Application {
 					}
 				}
 			});
-
+			
+			abrirLItem.setOnAction(abrirLetras);
+			ub.setActionLyricsBtn(abrirLetras);
+			
+			
+			
+			EventHandler<ActionEvent> abreLink = ( e -> {
+				TextInputDialog dialog = new TextInputDialog("Default Text");
+				dialog.setTitle("Abrir Link");
+	            dialog.setHeaderText("Insira o link abaixo:");
+	            dialog.setContentText("Link:");
+	            
+	            Optional<String> result = dialog.showAndWait();
+	            if(result.isPresent()) {
+	            	try {
+						mc.openLink(primaryStage, result.get());
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+	            }
+	            
+			});
+			abrirTItem.setOnAction(abreLink);
 			
 			
 			
 			
-			ub.setActionAddPlaylistBtn(e -> {
+			
+			EventHandler<ActionEvent> addPlaylist = (e -> {
 				if (uf.getPlaylistF() == null) {
 					uf.setPlaylistF(fc.selecionaArquivo(1).showOpenDialog(primaryStage));
 				}
@@ -141,13 +202,18 @@ public class Main extends Application {
 				}
 			});
 			
+			ub.setActionAddPlaylistBtn(addPlaylist);
+			addPlayItem.setOnAction(addPlaylist);
 			
 			
-			btnEscolheArquivo.setOnAction(
+		
+			EventHandler<ActionEvent> abrirMusica = (
 				e -> {
 					try {
 						//para musica atual (se houver)
 						mc.closePlayer();
+						ue.ResetElements(ir.mscCapa());
+						ub.ResetElements();
 						
 						//abre seletor de arquivo
 						uf.setMusicF(fc.selecionaArquivo(0).showOpenDialog(primaryStage));
@@ -160,6 +226,8 @@ public class Main extends Application {
 								
 								uf.mscAsPlaylist();
 								ub.setNextBackEnabled();
+								proxMscItem.setDisable(false);
+								antMscItem.setDisable(false);
 								uf.setPlaylistL(pc.openPlaylist(uf));
 								
 								//CORRIGIR ISSO, COLOCAR SEPARADO
@@ -200,7 +268,19 @@ public class Main extends Application {
 						}
 					}
 				);
-				
+			
+			
+				btnEscolheArquivo.setOnAction(abrirMusica);
+				abrirAItem.setOnAction(abrirMusica);
+				fMusicaItem.setOnAction(e -> {
+					try {
+						mc.closePlayer();
+						ue.ResetElements(ir.mscCapa());
+						ub.ResetElements();
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				});
 			
 			
 			
@@ -233,6 +313,8 @@ public class Main extends Application {
 								uf.mscAsPlaylist();
 								uf.setPlaylistL(pc.openPlaylist(uf));
 								ub.setNextBackEnabled();
+								proxMscItem.setDisable(false);
+								antMscItem.setDisable(false);
 								
 								//CORRIGIR ISSO, COLOCAR SEPARADO
 								Thread t = abrePlaylist();
@@ -244,7 +326,7 @@ public class Main extends Application {
 									t.interrupt();
 								};
 								ub.setActionProxBtn(proxMsc);
-								
+								proxMscItem.setOnAction(proxMsc);
 								
 								
 								EventHandler<ActionEvent> anterMsc = (e1 -> {
@@ -253,6 +335,7 @@ public class Main extends Application {
 									uf.setPlaylistPos(uf.getPlaylistPos() - 2);
 								});
 								ub.setActionBackBtn(anterMsc);
+								antMscItem.setOnAction(anterMsc);
 								
 							} else {
 								//abre player

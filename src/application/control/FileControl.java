@@ -10,8 +10,8 @@ public class FileControl {
 		FileChooser fc = new FileChooser();
 		
 		if (tipo == 0) {
-			ExtensionFilter exMscPlay = new ExtensionFilter("Music and Playlist Files","*.mp3","*.flac","*.wav", "*.m3u8","*.m3u");
-			ExtensionFilter exMsc = new ExtensionFilter("Music Files","*.mp3","*.flac","*.wav");
+			ExtensionFilter exMscPlay = new ExtensionFilter("Music and Playlist Files","*.mp3","*.flac","*.wav","*.aac","*.m4a","*.ogg","*.m3u8","*.m3u");
+			ExtensionFilter exMsc = new ExtensionFilter("Music Files","*.mp3","*.flac","*.wav","*.aac","*.m4a","*.ogg");
 			fc.getExtensionFilters().add(exMscPlay);
 			fc.getExtensionFilters().add(exMsc);
 		}
