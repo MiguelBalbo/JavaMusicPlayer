@@ -64,7 +64,7 @@ public class Main extends Application {
 			
 			
 			BorderPane root = new BorderPane();
-			Scene scene = new Scene(root,400,650);
+			Scene scene = new Scene(root,400,675);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			root.setStyle("-fx-background-color:#202022;");
 			
@@ -78,6 +78,8 @@ public class Main extends Application {
 
 	        // Menu arquivo
 	        Menu fileMenu = new Menu("Arquivo");
+	        fileMenu.getStyleClass().add("submenu-superior");
+	        
 	        MenuItem abrirTItem = new MenuItem("Abrir link");
 	        MenuItem abrirAItem = new MenuItem("Abrir arquivo");
 	        MenuItem abrirLItem = new MenuItem("Abrir letras");
@@ -86,6 +88,8 @@ public class Main extends Application {
 	        
 	        //menu controles
 	        Menu controleMenu = new Menu("Controles");
+	        fileMenu.getStyleClass().add("submenu-superior");
+
 	        MenuItem proxMscItem = new MenuItem("Próxima Musica");
 	        MenuItem antMscItem = new MenuItem("Música anterior");
 	        
@@ -93,7 +97,7 @@ public class Main extends Application {
 	        controleMenu.getItems().addAll(antMscItem,ub.getPauseMscItem(),proxMscItem);
 
 	        menuBar.getMenus().addAll(fileMenu,controleMenu);
-	        
+	        menuBar.getStyleClass().add("menu-superior");
 			
 	        if (System.getProperty("os.name") != null && System.getProperty("os.name").startsWith("Mac")) {
 	        	menuBar.useSystemMenuBarProperty().set(true);
